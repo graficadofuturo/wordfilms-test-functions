@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notion Dashboard - Flat Design</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* Reset e Estilos Globais */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #1A1A1A;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            color: #FFFFFF;
+            overflow: hidden;
+        }
+
+        /* Container Principal */
+        .dashboard-container {
+            width: 100%;
+            max-width: 800px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 1;
+        }
+
+        /* Porcentagem */
+        .percentage {
+            font-size: 12rem;
+            font-weight: 900;
+            color: #39FF14; /* Verde Neon */
+            line-height: 1;
+            margin-bottom: 2rem;
+            letter-spacing: -0.05em;
+        }
+
+        /* Barra de Progresso */
+        .progress-bar-container {
+            width: 100%;
+            height: 3rem;
+            background-color: #E0E0E0; /* Cinza Claro */
+            margin-bottom: 1.5rem;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background-color: #39FF14; /* Verde Neon */
+            width: 0%;
+            transition: width 0.5s ease-in-out;
+        }
+
+        /* Texto de Status */
+        .status-text {
+            color: #A0A0A0;
+            font-size: 1.5rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Mensagens de Erro/Loading */
+        .message {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #39FF14;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        .error {
+            background-color: #FF3333;
+            color: white;
+            padding: 1.5rem 2rem;
+            text-align: center;
+            cursor: pointer;
+        }
+        .error-title {
+            font-weight: 900;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        /* --- CHAT STYLES --- */
+        .chat-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 4rem;
+            height: 4rem;
+            background-color: #39FF14;
+            border-radius: 0; /* Strict flat design */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 100;
+            border: none;
+            outline: none;
+            box-shadow: none; /* Strict flat design */
+        }
+        .chat-btn svg {
+            width: 2rem;
+            height: 2rem;
+            fill: #1A1A1A;
+        }
+
+        .chat-window {
+            position: fixed;
+            bottom: 7rem;
+            right: 2rem;
+            width: 350px;
+            height: 500px;
+            background-color: #F5F5F5;
+            display: none;
+            flex-direction: column;
+            z-index: 100;
+            color: #1A1A1A;
+            border-radius: 0; /* Strict flat design */
+            box-shadow: none; /* Strict flat design */
+            border: 2px solid #39FF14; /* Optional flat border to separate from background */
+        }
+        .chat-window.open {
+            display: flex;
+        }
+
+        .chat-header {
+            background-color: #E0E0E0;
+            padding: 1rem;
+            font-weight: 700;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .close-chat {
+            cursor: pointer;
+            font-weight: 900;
+            font-size: 1.2rem;
+            color: #1A1A1A;
+            background: none;
+            border: none;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .msg {
+            max-width: 80%;
+            padding: 0.8rem 1rem;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            border-radius: 0; /* Strict flat design */
+            box-shadow: none; /* Strict flat design */
+            font-weight: normal !important;
+        }
+        .msg.bot {
+            background-color: #E0E0E0;
+            align-self: flex-start;
+            color: #1A1A1A;
+            font-weight: normal !important;
+        }
+        .msg.user {
+            background-color: #1A1A1A;
+            color: #39FF14;
+            align-self: flex-end;
+            font-weight: normal !important;
+        }
+
+        .chat-input-area {
+            display: flex;
+            padding: 1rem;
+            background-color: #E0E0E0;
+        }
+        .chat-input {
+            flex: 1;
+            padding: 0.8rem;
+            border: none;
+            background-color: #FFFFFF;
+            color: #1A1A1A;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            border-radius: 0; /* Strict flat design */
+        }
+        .chat-send {
+            background-color: #39FF14;
+            color: #1A1A1A;
+            border: none;
+            padding: 0 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            border-radius: 0; /* Strict flat design */
+        }
+
+        .whatsapp-btn {
+            display: inline-block;
+            margin-top: 0.5rem;
+            padding: 0.5rem 1rem;
+            background-color: #25D366;
+            color: white;
+            text-decoration: none;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            text-align: center;
+            border-radius: 0; /* Strict flat design */
+            box-shadow: none; /* Strict flat design */
+        }
+
+        /* Config Button */
+        .config-btn {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: #333;
+            cursor: pointer;
+            font-size: 0.8rem;
+            opacity: 0.3;
+            transition: opacity 0.3s;
+        }
+        .config-btn:hover {
+            opacity: 1;
+            color: #39FF14;
+        }
+
+        /* Setup Overlay */
+        #setup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #1A1A1A;
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        .setup-card {
+            background-color: #2A2A2A;
+            padding: 2rem;
+            width: 100%;
+            max-width: 400px;
+            border: 2px solid #39FF14;
+        }
+        .setup-title {
+            font-weight: 900;
+            color: #39FF14;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        .setup-field {
+            margin-bottom: 1rem;
+        }
+        .setup-label {
+            display: block;
+            font-size: 0.8rem;
+            color: #A0A0A0;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+        .setup-input {
+            width: 100%;
+            padding: 0.8rem;
+            background-color: #1A1A1A;
+            border: 1px solid #444;
+            color: white;
+            outline: none;
+        }
+        .setup-input:focus {
+            border-color: #39FF14;
+        }
+        .setup-btn {
+            width: 100%;
+            padding: 1rem;
+            background-color: #39FF14;
+            color: #1A1A1A;
+            border: none;
+            font-weight: 900;
+            text-transform: uppercase;
+            cursor: pointer;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="setup-overlay">
+        <div class="setup-card">
+            <div class="setup-title">Configuração Inicial</div>
+            <div class="setup-field">
+                <label class="setup-label">Notion API Key</label>
+                <input type="password" id="setup-notion" class="setup-input" placeholder="Insira sua chave do Notion">
+            </div>
+            <div class="setup-field">
+                <label class="setup-label">Gemini API Key</label>
+                <input type="password" id="setup-gemini" class="setup-input" placeholder="Insira sua chave do Gemini">
+            </div>
+            <button id="setup-save" class="setup-btn">Salvar e Iniciar</button>
+            <div style="margin-top: 1rem; font-size: 0.7rem; color: #666; text-align: center;">
+                As chaves são salvas apenas no seu navegador.
+            </div>
+        </div>
+    </div>
+
+    <button class="config-btn" id="config-btn">Configurar Chaves</button>
+
+    <div id="app" class="dashboard-container">
+        <div id="message" class="message">Carregando...</div>
+        
+        <div id="dashboard-content" style="display: none; width: 100%; text-align: center;">
+            <div id="percentage" class="percentage">0%</div>
+            <div class="progress-bar-container">
+                <div id="progress-fill" class="progress-bar-fill"></div>
+            </div>
+            <div id="status-text" class="status-text">0 de 0 tarefas concluídas</div>
+        </div>
+    </div>
+
+    <!-- CHAT UI -->
+    <button class="chat-btn" id="chat-btn">
+        <svg viewBox="0 0 24 24">
+            <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2Z"/>
+        </svg>
+    </button>
+
+    <div class="chat-window" id="chat-window">
+        <div class="chat-header">
+            <span>Typo | WordFilms</span>
+            <button class="close-chat" id="close-chat">X</button>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+            <div class="msg bot">Opa, aqui é o Typo! Na WordFilms, cada frame conta. O que vamos produzir hoje? Liste os itens do seu projeto que eu calculo o investimento para você.</div>
+        </div>
+        <div class="chat-input-area">
+            <input type="text" class="chat-input" id="chat-input" placeholder="Digite aqui...">
+            <button class="chat-send" id="chat-send">Enviar</button>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // CONFIGURAÇÕES DINÂMICAS (SEM CHAVES NO CÓDIGO)
+        // ==========================================
+        const PAGE_ID = 'da248786a2c949299279121cfbd8e336';
+
+        function getNotionKey() {
+            return localStorage.getItem('wordfilms_notion_key');
+        }
+
+        function getGeminiKey() {
+            return localStorage.getItem('wordfilms_gemini_key');
+        }
+
+        function setKeys(notionKey, geminiKey) {
+            if (notionKey) localStorage.setItem('wordfilms_notion_key', notionKey.trim());
+            if (geminiKey) localStorage.setItem('wordfilms_gemini_key', geminiKey.trim());
+            location.reload();
+        }
+
+        // Elementos do DOM
+        const elMessage = document.getElementById('message');
+        const elContent = document.getElementById('dashboard-content');
+        const elPercentage = document.getElementById('percentage');
+        const elProgressFill = document.getElementById('progress-fill');
+        const elStatusText = document.getElementById('status-text');
+        const btnConfig = document.getElementById('config-btn');
+        const setupOverlay = document.getElementById('setup-overlay');
+        const setupSave = document.getElementById('setup-save');
+
+        // Verifica se as chaves existem, se não, mostra o setup
+        if (!getNotionKey() || !getGeminiKey()) {
+            setupOverlay.style.display = 'flex';
+        }
+
+        setupSave.addEventListener('click', () => {
+            const nVal = document.getElementById('setup-notion').value;
+            const gVal = document.getElementById('setup-gemini').value;
+            if (nVal && gVal) {
+                setKeys(nVal, gVal);
+            } else {
+                alert("Por favor, insira ambas as chaves.");
+            }
+        });
+
+        btnConfig.addEventListener('click', () => {
+            const nKey = prompt("Insira a Notion API Key:", getNotionKey() || "");
+            const gKey = prompt("Insira a Gemini API Key:", getGeminiKey() || "");
+            if (nKey && gKey) setKeys(nKey, gKey);
+        });
+
+        function showError(msg, isAuthError = false) {
+            elContent.style.display = 'none';
+            elMessage.style.display = 'block';
+            elMessage.className = 'error';
+            let html = `<div class="error-title">Atenção</div><div>${msg}</div>`;
+            if (isAuthError) {
+                html += `<div style="margin-top:10px; font-size:0.8rem; text-decoration:underline;">Clique aqui para atualizar as chaves</div>`;
+                elMessage.onclick = () => {
+                    const nKey = prompt("A chave expirou ou é inválida. Insira a nova Notion API Key:", getNotionKey());
+                    const gKey = prompt("Insira a Gemini API Key:", getGeminiKey());
+                    if (nKey && gKey) setKeys(nKey, gKey);
+                };
+            }
+            elMessage.innerHTML = html;
+        }
+
+        async function fetchNotionData() {
+            const currentKey = getNotionKey();
+            if (!currentKey) return;
+
+            try {
+                const targetUrl = `https://api.notion.com/v1/blocks/${PAGE_ID}/children`;
+                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+
+                const response = await fetch(proxyUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${currentKey}`,
+                        'Notion-Version': '2022-06-28',
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                if (response.status === 401) {
+                    throw new Error("A chave do Notion expirou ou é inválida.");
+                }
+
+                if (!response.ok) {
+                    throw new Error(`Erro na API: ${response.status}`);
+                }
+
+                const data = await response.json();
+                processNotionData(data);
+
+            } catch (err) {
+                const isAuth = err.message.includes("401") || err.message.includes("expirou");
+                showError(err.message, isAuth);
+                console.error("Erro Notion:", err);
+            }
+        }
+
+        function processNotionData(data) {
+            let totalTasks = 0;
+            let completedTasks = 0;
+            const todoBlocks = data.results.filter(block => block.type === 'to_do');
+            todoBlocks.forEach(block => {
+                totalTasks++;
+                if (block.to_do.checked) completedTasks++;
+            });
+            updateUI(totalTasks, completedTasks);
+        }
+
+        function updateUI(total, completed) {
+            const percentage = total === 0 ? 0 : Math.round((completed / total) * 100);
+            elMessage.style.display = 'none';
+            elContent.style.display = 'block';
+            elPercentage.innerText = `${percentage}%`;
+            elProgressFill.style.width = `${percentage}%`;
+            elStatusText.innerText = `${completed} de ${total} tarefas concluídas`;
+        }
+
+        if (getNotionKey()) {
+            fetchNotionData();
+            setInterval(fetchNotionData, 10000);
+        }
+
+        // ==========================================
+        // LÓGICA DO CHATBOT
+        // ==========================================
+        const chatBtn = document.getElementById('chat-btn');
+        const chatWindow = document.getElementById('chat-window');
+        const closeChat = document.getElementById('close-chat');
+        const chatMessages = document.getElementById('chat-messages');
+        const chatInput = document.getElementById('chat-input');
+        const chatSend = document.getElementById('chat-send');
+
+        let chatHistory = [];
+
+        chatBtn.addEventListener('click', () => {
+            chatWindow.classList.add('open');
+            chatBtn.style.display = 'none';
+        });
+
+        closeChat.addEventListener('click', () => {
+            chatWindow.classList.remove('open');
+            chatBtn.style.display = 'flex';
+        });
+
+        function addMessage(text, sender, isHtml = false) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `msg ${sender}`;
+            if (isHtml) {
+                msgDiv.innerHTML = text;
+            } else {
+                msgDiv.innerText = text;
+            }
+            chatMessages.appendChild(msgDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        async function handleUserMessage() {
+            const text = chatInput.value.trim();
+            if (!text) return;
+
+            const currentGeminiKey = getGeminiKey();
+            if (!currentGeminiKey) {
+                alert("Por favor, configure a chave do Gemini primeiro.");
+                return;
+            }
+
+            addMessage(text, 'user');
+            chatInput.value = '';
+            chatInput.disabled = true;
+            chatSend.disabled = true;
+            
+            const loadingId = 'loading-' + Date.now();
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'msg bot';
+            loadingDiv.id = loadingId;
+            loadingDiv.innerText = 'Digitando...';
+            chatMessages.appendChild(loadingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            try {
+                const systemInstruction = `Você é o Typo, o orçamentista especialista da produtora de vídeo WordFilms. Ton de voz prestativo, profissional, executivo, sóbrio, direto ao ponto e focado em vendas consultivas. PROIBIDO: Emojis, Markdown (**). Use apenas texto simples e <br> para quebras.`;
+                
+                const contents = [
+                    {
+                        role: 'user',
+                        parts: [{ text: systemInstruction + "\n\nUsuário: " + text }]
+                    }
+                ];
+
+                if (chatHistory.length > 0) {
+                    const historyText = chatHistory.map(h => `${h.role === 'model' ? 'Typo' : 'Usuário'}: ${h.parts[0].text}`).join('\n');
+                    contents[0].parts[0].text = systemInstruction + "\n\nHistórico:\n" + historyText + "\n\nUsuário: " + text;
+                }
+                
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key=${currentGeminiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents })
+                });
+
+                const data = await response.json();
+                const loadingElement = document.getElementById(loadingId);
+                if (loadingElement) loadingElement.remove();
+
+                if (response.ok && data.candidates && data.candidates[0].content.parts[0].text) {
+                    let botReply = data.candidates[0].content.parts[0].text;
+                    
+                    botReply = botReply.replace(/\{\{WA_APPROVE\|(.*?)\|(.*?)\|(.*?)\}\}/g, (match, nome, itens, total) => {
+                        const msg = `Olá, equipe WordFilms.\nMeu nome é ${nome.trim()} e aprovei um orçamento: ${itens.trim()}\nTotal: ${total.trim()}`;
+                        return `<a href='https://wa.me/5521969218766?text=${encodeURIComponent(msg)}' target='_blank' class='whatsapp-btn'>Falar com Especialista</a>`;
+                    });
+
+                    botReply = botReply.replace(/\{\{WA_LARGE\|(.*?)\|(.*?)\}\}/g, (match, nome, itens) => {
+                        const msg = `Olá, equipe WordFilms.\nMeu nome é ${nome.trim()}. Gostaria de um orçamento para projeto de grande escala: ${itens.trim()}`;
+                        return `<a href='https://wa.me/5521969218766?text=${encodeURIComponent(msg)}' target='_blank' class='whatsapp-btn'>Falar com Especialista</a>`;
+                    });
+
+                    addMessage(botReply, 'bot', true);
+                    chatHistory.push({ role: 'user', parts: [{ text: text }] });
+                    chatHistory.push({ role: 'model', parts: [{ text: botReply }] });
+                } else {
+                    const errorMsg = data.error ? data.error.message : 'Falha na resposta do Gemini';
+                    throw new Error(errorMsg);
+                }
+            } catch (error) {
+                const loadingElement = document.getElementById(loadingId);
+                if (loadingElement) loadingElement.remove();
+                addMessage(`Erro ao conectar com o Typo: ${error.message}. Verifique a chave do Gemini nas configurações.`, 'bot');
+                console.error(error);
+            } finally {
+                chatInput.disabled = false;
+                chatSend.disabled = false;
+                chatInput.focus();
+            }
+        }
+
+        chatSend.addEventListener('click', handleUserMessage);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleUserMessage();
+        });
+
+    </script>
+</body>
+</html>

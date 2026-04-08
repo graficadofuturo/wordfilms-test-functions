@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notion Dashboard - Flat Design</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* Reset e Estilos Globais */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #1A1A1A;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            color: #FFFFFF;
+        }
+
+        /* Container Principal */
+        .dashboard-container {
+            width: 100%;
+            max-width: 800px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Porcentagem */
+        .percentage {
+            font-size: 12rem;
+            font-weight: 900;
+            color: #39FF14; /* Verde Neon */
+            line-height: 1;
+            margin-bottom: 2rem;
+            letter-spacing: -0.05em;
+        }
+
+        /* Barra de Progresso */
+        .progress-bar-container {
+            width: 100%;
+            height: 3rem;
+            background-color: #E0E0E0; /* Cinza Claro */
+            margin-bottom: 1.5rem;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background-color: #39FF14; /* Verde Neon */
+            width: 0%;
+            transition: width 0.5s ease-in-out;
+        }
+
+        /* Texto de Status */
+        .status-text {
+            color: #A0A0A0;
+            font-size: 1.5rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Mensagens de Erro/Loading */
+        .message {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #39FF14;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        .error {
+            background-color: #FF3333;
+            color: white;
+            padding: 1.5rem 2rem;
+            text-align: center;
+        }
+        .error-title {
+            font-weight: 900;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app" class="dashboard-container">
+        <div id="message" class="message">Carregando...</div>
+        
+        <div id="dashboard-content" style="display: none; width: 100%; text-align: center;">
+            <div id="percentage" class="percentage">0%</div>
+            <div class="progress-bar-container">
+                <div id="progress-fill" class="progress-bar-fill"></div>
+            </div>
+            <div id="status-text" class="status-text">0 de 0 tarefas concluídas</div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // CONFIGURAÇÕES DA API DO NOTION
+        // ==========================================
+        const NOTION_KEY = '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'; // INSIRA SUA NOTION API KEY AQUI
+        const PAGE_ID = 'da248786a2c949299279121cfbd8e336';
+
+        // Elementos do DOM
+        const elMessage = document.getElementById('message');
+        const elContent = document.getElementById('dashboard-content');
+        const elPercentage = document.getElementById('percentage');
+        const elProgressFill = document.getElementById('progress-fill');
+        const elStatusText = document.getElementById('status-text');
+
+        function showError(msg) {
+            elContent.style.display = 'none';
+            elMessage.style.display = 'block';
+            elMessage.className = 'error';
+            elMessage.innerHTML = `<div class="error-title">Atenção</div><div>${msg}</div>`;
+        }
+
+        async function fetchNotionData() {
+            if (!NOTION_KEY) {
+                showError('Por favor, insira sua NOTION_KEY no código JavaScript (linha 82).');
+                return;
+            }
+
+            try {
+                const url = `/api/notion-tasks?key=${encodeURIComponent(NOTION_KEY)}&pageId=${encodeURIComponent(PAGE_ID)}`;
+                
+                const response = await fetch(url);
+
+                if (!response.ok) {
+                    throw new Error(`Erro na API: ${response.status} ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                
+                let totalTasks = 0;
+                let completedTasks = 0;
+
+                // Filtra apenas os blocos do tipo 'to_do'
+                const todoBlocks = data.results.filter(block => block.type === 'to_do');
+                
+                todoBlocks.forEach(block => {
+                    totalTasks++;
+                    if (block.to_do.checked) {
+                        completedTasks++;
+                    }
+                });
+
+                updateUI(totalTasks, completedTasks);
+
+            } catch (err) {
+                showError(err.message || 'Erro ao buscar dados do Notion.');
+            }
+        }
+
+        function updateUI(total, completed) {
+            const percentage = total === 0 ? 0 : Math.round((completed / total) * 100);
+
+            elMessage.style.display = 'none';
+            elContent.style.display = 'block';
+
+            elPercentage.innerText = `${percentage}%`;
+            elProgressFill.style.width = `${percentage}%`;
+            elStatusText.innerText = `${completed} de ${total} tarefas concluídas`;
+        }
+
+        // Busca inicial
+        fetchNotionData();
+
+        // Polling a cada 7 segundos (7000 milissegundos)
+        setInterval(fetchNotionData, 7000);
+    </script>
+</body>
+</html>

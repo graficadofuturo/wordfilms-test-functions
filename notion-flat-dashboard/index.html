@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notion Dashboard - Flat Design</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* Reset e Estilos Globais */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background-color: #1A1A1A;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            color: #FFFFFF;
+            overflow: hidden;
+        }
+
+        /* Container Principal */
+        .dashboard-container {
+            width: 100%;
+            max-width: 800px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 1;
+        }
+
+        /* Porcentagem */
+        .percentage {
+            font-size: 12rem;
+            font-weight: 900;
+            color: #39FF14; /* Verde Neon */
+            line-height: 1;
+            margin-bottom: 2rem;
+            letter-spacing: -0.05em;
+        }
+
+        /* Barra de Progresso */
+        .progress-bar-container {
+            width: 100%;
+            height: 3rem;
+            background-color: #E0E0E0; /* Cinza Claro */
+            margin-bottom: 1.5rem;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background-color: #39FF14; /* Verde Neon */
+            width: 0%;
+            transition: width 0.5s ease-in-out;
+        }
+
+        /* Texto de Status */
+        .status-text {
+            color: #A0A0A0;
+            font-size: 1.5rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Mensagens de Erro/Loading */
+        .message {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #39FF14;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        .error {
+            background-color: #FF3333;
+            color: white;
+            padding: 1.5rem 2rem;
+            text-align: center;
+        }
+        .error-title {
+            font-weight: 900;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        /* --- CHAT STYLES --- */
+        .chat-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 4rem;
+            height: 4rem;
+            background-color: #39FF14;
+            border-radius: 0; /* Strict flat design */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 100;
+            border: none;
+            outline: none;
+            box-shadow: none; /* Strict flat design */
+        }
+        .chat-btn svg {
+            width: 2rem;
+            height: 2rem;
+            fill: #1A1A1A;
+        }
+
+        .chat-window {
+            position: fixed;
+            bottom: 7rem;
+            right: 2rem;
+            width: 350px;
+            height: 500px;
+            background-color: #F5F5F5;
+            display: none;
+            flex-direction: column;
+            z-index: 100;
+            color: #1A1A1A;
+            border-radius: 0; /* Strict flat design */
+            box-shadow: none; /* Strict flat design */
+            border: 2px solid #39FF14; /* Optional flat border to separate from background */
+        }
+        .chat-window.open {
+            display: flex;
+        }
+
+        .chat-header {
+            background-color: #E0E0E0;
+            padding: 1rem;
+            font-weight: 700;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .close-chat {
+            cursor: pointer;
+            font-weight: 900;
+            font-size: 1.2rem;
+            color: #1A1A1A;
+            background: none;
+            border: none;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .msg {
+            max-width: 80%;
+            padding: 0.8rem 1rem;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            border-radius: 0; /* Strict flat design */
+            box-shadow: none; /* Strict flat design */
+            font-weight: normal !important;
+        }
+        .msg.bot {
+            background-color: #E0E0E0;
+            align-self: flex-start;
+            color: #1A1A1A;
+            font-weight: normal !important;
+        }
+        .msg.user {
+            background-color: #1A1A1A;
+            color: #39FF14;
+            align-self: flex-end;
+            font-weight: normal !important;
+        }
+
+        .chat-input-area {
+            display: flex;
+            padding: 1rem;
+            background-color: #E0E0E0;
+        }
+        .chat-input {
+            flex: 1;
+            padding: 0.8rem;
+            border: none;
+            background-color: #FFFFFF;
+            color: #1A1A1A;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            border-radius: 0; /* Strict flat design */
+        }
+        .chat-send {
+            background-color: #39FF14;
+            color: #1A1A1A;
+            border: none;
+            padding: 0 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            border-radius: 0; /* Strict flat design */
+        }
+
+        .whatsapp-btn {
+            display: inline-block;
+            margin-top: 0.5rem;
+            padding: 0.5rem 1rem;
+            background-color: #25D366;
+            color: white;
+            text-decoration: none;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            text-align: center;
+            border-radius: 0; /* Strict flat design */
+            box-shadow: none; /* Strict flat design */
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app" class="dashboard-container">
+        <div id="message" class="message">Carregando...</div>
+        
+        <div id="dashboard-content" style="display: none; width: 100%; text-align: center;">
+            <div id="percentage" class="percentage">0%</div>
+            <div class="progress-bar-container">
+                <div id="progress-fill" class="progress-bar-fill"></div>
+            </div>
+            <div id="status-text" class="status-text">0 de 0 tarefas concluídas</div>
+        </div>
+    </div>
+
+    <!-- CHAT UI -->
+    <button class="chat-btn" id="chat-btn">
+        <svg viewBox="0 0 24 24">
+            <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2Z"/>
+        </svg>
+    </button>
+
+    <div class="chat-window" id="chat-window">
+        <div class="chat-header">
+            <span>Typo | WordFilms</span>
+            <button class="close-chat" id="close-chat">X</button>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+            <div class="msg bot">Opa, aqui é o Typo! Na WordFilms, cada frame conta. O que vamos produzir hoje? Liste os itens do seu projeto que eu calculo o investimento para você.</div>
+        </div>
+        <div class="chat-input-area">
+            <input type="text" class="chat-input" id="chat-input" placeholder="Digite aqui...">
+            <button class="chat-send" id="chat-send">Enviar</button>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // CONFIGURAÇÕES DA API DO NOTION
+        // ==========================================
+        const NOTION_KEY = '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';
+        const PAGE_ID = 'da248786a2c949299279121cfbd8e336';
+
+        // ==========================================
+        // CONFIGURAÇÕES DA API DO GEMINI
+        // ==========================================
+        // AVISO DE SEGURANÇA: Em produção, o ideal é manter a chave no backend. 
+        // Como solicitado, a chave está exposta aqui para fins de demonstração/client-side.
+        const GEMINI_API_KEY = 'AIzaSyA7RnJmP3Q9c0lIDfEIjB-VW9X8be3YE1U'; // COLE_SUA_CHAVE_AQUI
+
+        // Elementos do DOM - Notion
+        const elMessage = document.getElementById('message');
+        const elContent = document.getElementById('dashboard-content');
+        const elPercentage = document.getElementById('percentage');
+        const elProgressFill = document.getElementById('progress-fill');
+        const elStatusText = document.getElementById('status-text');
+
+        function showError(msg) {
+            elContent.style.display = 'none';
+            elMessage.style.display = 'block';
+            elMessage.className = 'error';
+            elMessage.innerHTML = `<div class="error-title">Atenção</div><div>${msg}</div>`;
+        }
+
+        async function fetchNotionData() {
+            if (!NOTION_KEY) {
+                showError('Por favor, insira sua NOTION_KEY no código.');
+                return;
+            }
+
+            try {
+                const url = `/api/notion-tasks?key=${encodeURIComponent(NOTION_KEY)}&pageId=${encodeURIComponent(PAGE_ID)}`;
+                
+                const response = await fetch(url);
+
+                if (!response.ok) {
+                    throw new Error(`Erro na API: ${response.status} ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                
+                let totalTasks = 0;
+                let completedTasks = 0;
+
+                const todoBlocks = data.results.filter(block => block.type === 'to_do');
+                
+                todoBlocks.forEach(block => {
+                    totalTasks++;
+                    if (block.to_do.checked) {
+                        completedTasks++;
+                    }
+                });
+
+                updateUI(totalTasks, completedTasks);
+
+            } catch (err) {
+                showError(err.message || 'Erro ao buscar dados do Notion.');
+            }
+        }
+
+        function updateUI(total, completed) {
+            const percentage = total === 0 ? 0 : Math.round((completed / total) * 100);
+
+            elMessage.style.display = 'none';
+            elContent.style.display = 'block';
+
+            elPercentage.innerText = `${percentage}%`;
+            elProgressFill.style.width = `${percentage}%`;
+            elStatusText.innerText = `${completed} de ${total} tarefas concluídas`;
+        }
+
+        fetchNotionData();
+        setInterval(fetchNotionData, 7000);
+
+        // ==========================================
+        // LÓGICA DO CHATBOT (GEMINI API)
+        // ==========================================
+        const chatBtn = document.getElementById('chat-btn');
+        const chatWindow = document.getElementById('chat-window');
+        const closeChat = document.getElementById('close-chat');
+        const chatMessages = document.getElementById('chat-messages');
+        const chatInput = document.getElementById('chat-input');
+        const chatSend = document.getElementById('chat-send');
+
+        let chatHistory = [];
+
+        chatBtn.addEventListener('click', () => {
+            chatWindow.classList.add('open');
+            chatBtn.style.display = 'none';
+        });
+
+        closeChat.addEventListener('click', () => {
+            chatWindow.classList.remove('open');
+            chatBtn.style.display = 'flex';
+        });
+
+        function addMessage(text, sender, isHtml = false) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `msg ${sender}`;
+            if (isHtml) {
+                msgDiv.innerHTML = text;
+            } else {
+                msgDiv.innerText = text;
+            }
+            chatMessages.appendChild(msgDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        async function callGeminiAPI(payload) {
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+            return response;
+        }
+
+        async function handleUserMessage() {
+            const text = chatInput.value.trim();
+            if (!text) return;
+
+            addMessage(text, 'user');
+            chatInput.value = '';
+            
+            // Disable input while waiting
+            chatInput.disabled = true;
+            chatSend.disabled = true;
+            
+            // Add loading indicator
+            const loadingId = 'loading-' + Date.now();
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'msg bot';
+            loadingDiv.id = loadingId;
+            loadingDiv.innerText = 'Digitando...';
+            chatMessages.appendChild(loadingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            try {
+                const systemInstruction = `Você é o Typo, o orçamentista especialista da produtora de vídeo WordFilms.
+Seu tom de voz é prestativo, profissional, executivo, sóbrio, direto ao ponto e focado em vendas consultivas.
+
+ESTRITAMENTE PROIBIDO: Usar emojis em qualquer interação.
+ESTRITAMENTE PROIBIDO: Usar asteriscos (**) ou qualquer formatação Markdown. Todo o texto deve ser puramente simples.
+
+COLETA DE NOME: Logo após a primeira interação ou assim que identificar interesse em orçamento, pergunte o nome do cliente de forma natural. Memorize este nome e utilize-o em todas as interações seguintes para personalizar o atendimento.
+
+NUNCA responda com "não entendi", "putz" ou mensagens genéricas de falha. Se o usuário for ambíguo na quantidade ou no tipo de serviço, assuma a postura de um vendedor humano e faça PERGUNTAS DE SONDAGEM.
+Exemplo: "Legal! Esses 56 vídeos seriam no formato Reels para redes sociais ou vídeos Institucionais maiores? Isso muda a forma como estruturamos o projeto e o investimento."
+
+Foco Direcionado: Você é capaz de manter conversas casuais, mas sua missão é vender. SEMPRE crie uma ponte sutil para trazer o assunto de volta para a produção de vídeos.
+
+Humor Espelhado: Tenha senso de humor apenas como um reflexo do cliente, mas mantenha o tom executivo e sem emojis.
+
+Limites Éticos e Legais (Tolerância Zero): Recuse temas ilegais, imorais, de cunho sexual/explícito, discriminatório ou antiético.
+
+TABELA DE PREÇOS (CONHECIMENTO BASE - Use APENAS estes valores):
+- Vídeo Institucional (até 2 min): R$ 3.500,00
+- Reels/TikTok (unidade): R$ 450,00
+- Cobertura de Evento (diária): R$ 2.000,00
+- Edição de Vídeo Bruto (por hora de material): R$ 600,00
+- Motion Graphics/Animação (por minuto): R$ 1.500,00
+
+FLUXO DE ORÇAMENTO E TRANSBORDO:
+1. Processe o cálculo total sempre de forma silenciosa ("por trás dos panos").
+2. SE o cálculo for <= R$ 15.000,00: Forneça o orçamento detalhado (item a item) e pergunte se o cliente deseja avançar.
+   - FLUXO DE FINALIZAÇÃO E APROVAÇÃO: Assim que o cliente aceitar o orçamento (ex: 'sim', 'bora', 'fechado'), você DEVE responder EXATAMENTE com o texto abaixo e adicionar a tag de link no final:
+   "Obrigado pela confiança, [NOME DO CLIENTE]! Esperamos que essa parceria dure por muitos projetos. Nossos especialistas estarão disponíveis para lhe ajudar nesse próximo passo.<br><br>{{WA_APPROVE|[NOME DO CLIENTE]|[RESUMO DOS ITENS E VALORES DETALHADOS]|[VALOR TOTAL]}}"
+
+3. SE o cálculo for > R$ 15.000,00 (FLUXO DE GRANDE ESCALA): É ESTRITAMENTE PROIBIDO informar o preço, valores ou a matemática feita. Aborte a exibição de números e responda APENAS com o seguinte texto exato:
+   "Entendi! Se são vídeos mais longos, como os Vídeos Institucionais (até 2 minutos), que geralmente demandam mais planejamento, roteiro e produção, o projeto é de uma escala considerável. Como seu projeto é de grande escala, nossa equipe de especialistas precisa analisar as complexidades para te passar algo personalizado. Vamos conversar pelo WhatsApp?<br><br>{{WA_LARGE|[NOME DO CLIENTE]|[ITENS E QUANTIDADES]}}"
+
+Formate suas respostas em HTML limpo (usando <br> apenas para quebras de linha). Não use Markdown.`;
+
+                const response = await callGeminiAPI({
+                    apiKey: GEMINI_API_KEY,
+                    systemInstruction: systemInstruction,
+                    history: chatHistory,
+                    message: text
+                });
+
+                const data = await response.json();
+                
+                // Remove loading indicator
+                const loadingElement = document.getElementById(loadingId);
+                if (loadingElement) loadingElement.remove();
+
+                if (response.ok && data.text) {
+                    let botReply = data.text;
+                    
+                    // Processa a URL dinâmica do WhatsApp para Aprovação (<= 15k)
+                    botReply = botReply.replace(/\{\{WA_APPROVE\|(.*?)\|(.*?)\|(.*?)\}\}/g, (match, nome, itens, total) => {
+                        const clienteNome = nome.trim();
+                        const projetoDetalhes = itens.trim();
+                        const valorTotal = total.trim();
+                        
+                        const mensagemPersonalizada = `Olá, equipe WordFilms.\nMeu nome é ${clienteNome} e estive conversando com o Typo. Acabei de aprovar um orçamento pelo site e gostaria de dar continuidade ao projeto.\nResumo do Pedido: ${projetoDetalhes}\nTotal: ${valorTotal}\nFico no aguardo para os próximos passos.`;
+                        const mensagemCodificada = encodeURIComponent(mensagemPersonalizada);
+                        return `<a href='https://wa.me/5521969218766?text=${mensagemCodificada}' target='_blank' class='whatsapp-btn'>Falar com Especialista</a>`;
+                    });
+
+                    // Processa a URL dinâmica do WhatsApp para Grande Escala (> 15k)
+                    botReply = botReply.replace(/\{\{WA_LARGE\|(.*?)\|(.*?)\}\}/g, (match, nome, itens) => {
+                        const clienteNome = nome.trim();
+                        const projetoDetalhes = itens.trim();
+                        
+                        const mensagemPersonalizada = `Olá, equipe WordFilms.\nMeu nome é ${clienteNome} e estive conversando com o Typo. Gostaria de solicitar um orçamento detalhado para o seguinte projeto:\nServiço: ${projetoDetalhes}\nPelo volume e complexidade, entendi que este é um projeto de grande escala. Gostaria de agendar uma conversa para alinharmos os detalhes técnicos e prazos. Fico no aguardo.`;
+                        const mensagemCodificada = encodeURIComponent(mensagemPersonalizada);
+                        return `<a href='https://wa.me/5521969218766?text=${mensagemCodificada}' target='_blank' class='whatsapp-btn'>Falar com Especialista</a>`;
+                    });
+
+                    addMessage(botReply, 'bot', true);
+                    
+                    // Update history
+                    chatHistory.push({ role: 'user', parts: [{ text: text }] });
+                    chatHistory.push({ role: 'model', parts: [{ text: botReply }] });
+                } else {
+                    throw new Error(data.error ? data.error : 'Erro desconhecido na API do Gemini');
+                }
+            } catch (error) {
+                const loadingElement = document.getElementById(loadingId);
+                if (loadingElement) loadingElement.remove();
+                
+                addMessage("Deu um tilt nos meus cabos aqui! Verifique no console se a API Key do Gemini está configurada corretamente.", 'bot');
+                console.error("Erro na API do Gemini:", error);
+            } finally {
+                chatInput.disabled = false;
+                chatSend.disabled = false;
+                chatInput.focus();
+            }
+        }
+
+        chatSend.addEventListener('click', handleUserMessage);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleUserMessage();
+        });
+
+    </script>
+</body>
+</html>
+
